@@ -5,6 +5,8 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqlite_practice/note_model.dart';
+import 'package:sqlite_practice/relational_user_note_model.dart';
+import 'package:sqlite_practice/user_model.dart';
 
 class DatabaseHelper{
   // Make a Singleton instance of DatabaseHelper
@@ -33,13 +35,26 @@ class DatabaseHelper{
   Future<Database> _initDB() async {
     String directoryPath = await getDatabasesPath();
     String path = join(directoryPath,DatabaseHelper.dbName);
-    return await openDatabase(path,version: 1,onCreate: _createDatabase );
+    return await openDatabase(path,version: 2,onCreate: _createDatabase );
   }
+
   void _createDatabase(Database db, int version) async {
     // When creating the db, create the table
+
     await db.execute(
-        'CREATE TABLE ${NoteFields.tableName} (${NoteFields.id} INTEGER PRIMARY KEY, ${NoteFields.title} TEXT, ${NoteFields.desc} TEXT)');
+        'CREATE TABLE ${NoteFields.tableName} (${NoteFields.id} INTEGER PRIMARY KEY, ${NoteFields.title} TEXT, ${NoteFields.desc} TEXT), ');
+      }
+
+  void _createUserTable(Database? db) async {
+    await db!.execute(
+        'CREATE TABLE ${UserFields.tableName} (${UserFields.id} INTEGER PRIMARY KEY, ${UserFields.username} TEXT, ${UserFields.password} TEXT)');
   }
+  void _createRelationTable(Database? db) async {
+    await db!.execute(
+        'CREATE TABLE ${RelationUserNoteFields.tableName} (${RelationUserNoteFields.id} INTEGER PRIMARY KEY, ${RelationUserNoteFields.user_id} INTEGER, ${RelationUserNoteFields.note_id} INTEGER, FOREIGN KEY(user_id) REFERENCES User(_id)),FOREIGN KEY(note_id) REFERENCES Note(_id)) ');
+
+  }
+
   //
   Future<List<Note>> getNotes() async {
     Database? db = await instance.database;
