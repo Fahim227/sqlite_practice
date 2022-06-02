@@ -1,18 +1,23 @@
 # sqlite_practice
 
-A new Flutter project.
+A Note App with Authentication.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+This App is Created Based on this below diagram.
 
 ![alt text](https://github.com/Fahim227/sqlite_practice/blob/master/Untitled%20Diagram.drawio.png?raw=true)
+
+SQLite is a C-language library that provides a SQL database engine that is tiny,
+fast, self-contained, high-reliability, and full-featured. 
+The SQLite database engine is the most widely used database engine on the planet.
+SQLite is included in all mobile phones and most laptops, as well as a slew of other programs that people use on a daily basis.
+
+To use SQLite her the SQflite plugin used in this app
+
+Operations:
+    * User can create account
+    * Login
+    * Add, Delete, Update and show Notes
+Each User's Notes are shown based on their PrimaryKey(PK) and saved their Notes in RelationUserNote table using user_id and note_id.
+The Data is stored in the devices local database.
