@@ -14,8 +14,8 @@ class RelationUserNoteFields{
 
 class RelationUserNote {
   int? id;
-  String? user_id;
-  String? note_id;
+  int? user_id;
+  int? note_id;
 
   RelationUserNote({this.id, required this.user_id, required this.note_id});
 

@@ -26,7 +26,6 @@ class DatabaseHelper{
     if(_database != null){
       return _database;
     }
-    print('Updating DB');
     _database = await _initDB();
     return _database;
 
@@ -37,8 +36,6 @@ class DatabaseHelper{
 
     String directoryPath = await getDatabasesPath();
     String path = join(directoryPath,DatabaseHelper.dbName);
-
-    print('Upgrading');
     return await openDatabase(path,version: 5,onCreate: _createDatabase,onUpgrade: (Database? db, int oldVersion, int newVersion) {
       print(newVersion);
       if (oldVersion < newVersion) {
@@ -73,28 +70,67 @@ class DatabaseHelper{
   }
 
   //
-  Future<List<Note>> getNotes() async {
+  Future<List<Note>> getNotes(int userId) async {
     Database? db = await instance.database;
-    var notes = await db!.query(NoteFields.tableName!);
-    print(notes.length);
-    List<Note> allNotes = notes.isNotEmpty ? notes.map((e) => Note.fromMap(e)).toList() : [];
+    //get User and Notes from Relational Table
+    var relation = await db!.query(RelationUserNoteFields.tableName!,where: ' ${RelationUserNoteFields.user_id!} = ?',whereArgs: [userId]);
+
+    List<RelationUserNote> allRelation = relation.isNotEmpty ? relation.map((e) => RelationUserNote.fromMap(e)).toList() : [];
+    print('Allrelation length: ${allRelation.length}');
+    String noteIdTuple = "(";
+    List<int> l = [];
+    for (int i =0;i<allRelation.length;i++){
+      if(i==(allRelation.length-1)){
+        l.add(allRelation[i].note_id!);
+        noteIdTuple += allRelation[i].note_id.toString();
+      }
+      else{
+        l.add(allRelation[i].note_id!);
+        noteIdTuple += '${allRelation[i].note_id},';
+      }
+    }
+    noteIdTuple+=')';
+    print(noteIdTuple);
+    String queryString = 'SELECT * FROM ${NoteFields.tableName} WHERE ${NoteFields.id} IN ${noteIdTuple};';
+    print(queryString);
+    List<Map<String, Object?>> notes = await db!.rawQuery(queryString);
+    List<Note> allNotes = notes.map((e) => Note.fromMap(e)).toList();
+    // print('list: $l');
+    // List<Map<String, Object?>> notes = await db!.query(NoteFields.tableName!,where: '_id = ?',whereArgs: l);
+    // List<Note> allNotes = notes.map((e) => Note.fromMap(e)).toList();
+    print('Note length: ${allNotes.length}');
     return allNotes;
   }
 
-  Future<int> addNote(Note note) async {
+  Future<int> addNote(Note note,int user_id) async {
     Database? db = await DatabaseHelper.instance.database;
-    return await db!.insert(NoteFields.tableName!, note.toMap());
-  }
+    int note_id = await db!.insert(NoteFields.tableName!, note.toMap());
+    return await db!.insert(RelationUserNoteFields.tableName!, RelationUserNote(user_id: user_id, note_id: note_id).toMap());
 
+  }
   Future<int> addUser(User user) async {
     Database? db = await DatabaseHelper.instance.database;
     return await db!.insert(UserFields.tableName!, user.toMap());
   }
 
+  Future<int> authenticateUser(User user) async {
+    Database? db = await DatabaseHelper.instance.database;
+    List<Map<String, Object?>> users = await db!.query(UserFields.tableName!, where: 'username = ?',whereArgs: [user.username]);
+    List<User> userList = users.map((e) => User.fromMap(e)).toList();
+    if (userList[0].password == user.password){
+      return userList[0].id!;
+    }
+    return 0;
+  }
+
+
   Future<int> deleteNote(int id) async{
     Database? db = await DatabaseHelper.instance.database;
-    int response = await db!.delete(NoteFields.tableName!,where: '_id = ?', whereArgs: [id]);
-    return response;
+    int deletedNoteId = await db!.delete(NoteFields.tableName!,where: '_id = ?', whereArgs: [id]);
+    print('deleteres: '+deletedNoteId.toString());
+    int res = await db!.delete(RelationUserNoteFields.tableName!,where: '${RelationUserNoteFields.note_id} = ?',whereArgs: [id]);
+    print('res: '+res.toString());
+    return res;
   }
   Future<int> updateNote(int id,Note note ) async {
     Database? db = await DatabaseHelper.instance.database;

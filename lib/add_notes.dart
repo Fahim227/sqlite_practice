@@ -5,12 +5,14 @@ import 'package:sqlite_practice/database_helper.dart';
 import 'package:sqlite_practice/main.dart';
 import 'package:sqlite_practice/note_model.dart';
 import 'package:sqlite_practice/rounded_button.dart';
+import 'package:sqlite_practice/screens/home.dart';
 
 
 class AddOrUpdateNote extends StatelessWidget {
-  AddOrUpdateNote({Key? key,required this.action, required this.note}) : super(key: key);
+  AddOrUpdateNote({Key? key,required this.action, required this.note,required this.userId}) : super(key: key);
 
   int action;
+  int userId;
   Note note;
   String? title;
   String? desc;
@@ -20,10 +22,10 @@ class AddOrUpdateNote extends StatelessWidget {
   void addNote(BuildContext context) async {
     Database? db = await DatabaseHelper.instance.database;
     Note note = Note(title: title, desc: desc);
-    int response = await DatabaseHelper.instance.addNote(note);
+    int response = await DatabaseHelper.instance.addNote(note,userId);
     print(response);
     Navigator.push(context, MaterialPageRoute<void>(
-      builder: (BuildContext context) =>  MyHomePage(),
+      builder: (BuildContext context) =>  MyHomePage(userId: userId,),
     ),);
   }
 
@@ -34,7 +36,7 @@ class AddOrUpdateNote extends StatelessWidget {
     int response = await DatabaseHelper.instance.updateNote(note.id!,  n);
     print(response);
     Navigator.push(context, MaterialPageRoute<void>(
-      builder: (BuildContext context) =>  MyHomePage(),
+      builder: (BuildContext context) =>  MyHomePage(userId: userId,),
     ),);
   }
 
