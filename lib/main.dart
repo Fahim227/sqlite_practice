@@ -3,6 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:sqlite_practice/add_notes.dart';
 import 'package:sqlite_practice/database_helper.dart';
 import 'package:sqlite_practice/note_model.dart';
+import 'package:sqlite_practice/user_model.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -37,6 +38,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void _createDB() async {
     DBHelper = await DatabaseHelper.instance;
     _database = await DBHelper!.database;
+    print('Database version: ');
+    print(await _database!.getVersion());
     // int response = await DatabaseHelper.instance.addNote(Note(title: 'Testing From App', desc: 'Checking is data inserting or not'));
     // print(response);
     // DatabaseHelper.instance.getNotes();
@@ -50,6 +53,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     _createDB();
+
     //print(_database!.isOpen);
     getAllNotes();
     //print(allNotes!.length);
@@ -110,11 +114,13 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: (){
-          Navigator.push(context, MaterialPageRoute<void>(
-            // Action 0 => update, Action 1 => save
-            builder: (BuildContext context) =>  AddOrUpdateNote(action: 1,note: Note(title: '',desc: ''),),
-          ),);
+        onPressed: ()async {
+          int val = await DatabaseHelper.instance.addUser(User(username: 'Fahim227', password: '1234'));
+          print('User id: $val');
+          // Navigator.push(context, MaterialPageRoute<void>(
+          //   // Action 0 => update, Action 1 => save
+          //   builder: (BuildContext context) =>  AddOrUpdateNote(action: 1,note: Note(title: '',desc: ''),),
+          // ),);
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
